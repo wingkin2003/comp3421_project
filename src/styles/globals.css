@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f0f6ff;
+}
+
+:root {
+    --fallback-fonts: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.bg-cloudy {
+    background: linear-gradient(to bottom, #d9e7ff 0%, #f0f6ff 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-cloudy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><path fill="rgba(255,255,255,0.4)" d="M600,400a120,120,0,1,0-180,0c0,60,90,120,180,120s180-60,180-120a120,120,0,1,0-180,0"/><path fill="rgba(255,255,255,0.3)" d="M200,300a100,100,0,1,0-150,0c0,50,75,100,150,100s150-50,150-100a100,100,0,1,0-150,0"/></svg>') repeat;
+    opacity: 0.6;
+    animation: drift 60s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes drift {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes rain {
+    0% {
+        transform: translateY(-10vh);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.8s ease-in;
+}
+
+.animate-slideUp {
+    animation: slideUp 0.8s ease-out;
+}
+
+.animate-bounce {
+    animation: bounce 2s infinite;
+}
+
+.animate-rain {
+    animation: rain 1s linear infinite;
+    animation-delay: calc(var(--i) * 0.1s);
+}
