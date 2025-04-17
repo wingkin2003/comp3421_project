@@ -1,113 +1,117 @@
-export interface WeatherData {
-    temperature: number;
-    humidity: number;
-    condition: string;
-    updateTime: string;
-    rainfall?: number;
-    uvIndex?: number;
-    windSpeed?: number;
-}
-
-export interface WeatherHistory {
+export interface ForecastDay {
     date: string;
-    temperature: number;
-    rainfall: number;
-    condition: string;
-    uvIndex?: number;
-    windSpeed?: number;
+    weekday: string;
+    maxTemp: number;
+    minTemp: number;
+    weather: string;
+    wind: string;
+    maxRh: number;
+    minRh: number;
+    rainProbability: string;
 }
 
-export async function getHongKongWeather(): Promise<WeatherData | null> {
+export interface Warning {
+    name: string;
+    code: string;
+    action: string;
+    issueTime: string;
+    updateTime: string;
+}
+
+export interface LocalWeather {
+    generalSituation: string;
+    forecastPeriod: string;
+    forecastDescription: string;
+    outlook: string;
+    updateTime: string;
+}
+
+export interface RegionalTemperature {
+    place: string;
+    temperature: number;
+    unit: string;
+    recordTime: string;
+}
+
+export async function getWeatherForecast(): Promise<ForecastDay[]> {
+    const url = `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=en`;
     try {
-        const res = await fetch(
-            "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en",
-            { cache: "no-store" }
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        const weather = data.temperature.data.find((d: any) => d.place === "Hong Kong Observatory");
-        const humidity = data.humidity.data[0];
-        const rainfall = data.rainfall.data.find((d: any) => d.place === "Hong Kong Observatory");
-        const uv = data.uvindex?.data?.[0]?.value;
-        const wind = data.wind.data.find((d: any) => d.station === "King's Park");
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch forecast');
+        const data = await response.json();
+
+        return data.weatherForecast.map((day: any) => ({
+            date: day.forecastDate, // e.g., "20250416"
+            weekday: day.week,
+            maxTemp: day.forecastMaxtemp.value,
+            minTemp: day.forecastMintemp.value,
+            weather: day.forecastWeather,
+            wind: day.forecastWind,
+            maxRh: day.forecastMaxrh.value,
+            minRh: day.forecastMinrh.value,
+            rainProbability: day.PSR
+        }));
+    } catch (error) {
+        console.error('Error fetching forecast:', error);
+        return [];
+    }
+}
+
+export async function getCurrentWarnings(): Promise<Warning[]> {
+    const url = `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch warnings');
+        const data = await response.json();
+
+        return Object.entries(data || {}).map(([code, details]: [string, any]) => ({
+            name: details.name || 'Unknown Warning',
+            code: details.code || code,
+            action: details.actionCode || '',
+            issueTime: details.issueTime || '',
+            updateTime: details.updateTime || ''
+        }));
+    } catch (error) {
+        console.error('Error fetching warnings:', error);
+        return [];
+    }
+}
+
+export async function getLocalWeatherReport(): Promise<LocalWeather | null> {
+    const url = `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=en`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch local weather');
+        const data = await response.json();
 
         return {
-            temperature: weather.value,
-            humidity: humidity.value,
-            condition: data.icon[0] >= 80 ? "Rainy" : data.icon[0] >= 60 ? "Cloudy" : "Sunny",
-            updateTime: data.updateTime,
-            rainfall: rainfall?.value ?? 0,
-            uvIndex: uv ?? undefined,
-            windSpeed: wind?.speed ?? undefined,
+            generalSituation: data.generalSituation || 'No data available',
+            forecastPeriod: data.forecastPeriod || '',
+            forecastDescription: data.forecastDesc || '',
+            outlook: data.outlook || 'No outlook available',
+            updateTime: data.updateTime || ''
         };
-    } catch {
+    } catch (error) {
+        console.error('Error fetching local weather:', error);
         return null;
     }
 }
 
-export async function getLast7DaysWeather(): Promise<WeatherHistory[]> {
+export async function getRegionalTemperatures(): Promise<RegionalTemperature[]> {
+    const url = `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en`;
     try {
-        const res = await fetch(
-            "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=en",
-            { cache: "no-store" }
-        );
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.weatherForecast.slice(0, 7).map((day: any) => ({
-            date: day.forecastDate,
-            temperature: (day.forecastMintemp.value + day.forecastMaxtemp.value) / 2,
-            rainfall: 0, // API doesn't provide historical rainfall
-            condition: day.PSR.includes("LOW") ? "Sunny" : day.PSR.includes("HIGH") ? "Rainy" : "Cloudy",
-            uvIndex: undefined, // API doesn't provide UV for forecast
-            windSpeed: undefined, // API doesn't provide wind for forecast
-        }));
-    } catch {
-        return [];
-    }
-}
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch temperatures');
+        const data = await response.json();
 
-export async function getTodayLast8Hours(): Promise<WeatherHistory[]> {
-    try {
-        const res = await fetch(
-            "https://data.weather.gov.hk/weatherAPI/opendata/hourly.php?dataType=temp&lang=en",
-            { cache: "no-store" }
-        );
-        if (!res.ok) return [];
-        const data = await res.json();
-        const hours = data.temperature.data
-            .filter((d: any) => d.place === "Hong Kong Observatory")
-            .slice(-8)
-            .map((d: any, i: number) => ({
-                date: new Date(Date.now() - (7 - i) * 3600000).toISOString(),
-                temperature: d.value,
-                rainfall: 0, // No hourly rainfall
-                condition: "Cloudy", // No hourly condition
-                uvIndex: undefined,
-                windSpeed: undefined,
-            }));
-        return hours.length ? hours : [];
-    } catch {
-        return [];
-    }
-}
-
-export async function getNext8HoursForecast(): Promise<WeatherHistory[]> {
-    try {
-        const res = await fetch(
-            "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=en",
-            { cache: "no-store" }
-        );
-        if (!res.ok) return [];
-        const data = await res.json();
-        return new Array(8).fill(null).map((_, i) => ({
-            date: new Date(Date.now() + i * 3600000).toISOString(),
-            temperature: data.forecastWeather.temperature.value,
-            rainfall: 0, // No hourly rainfall
-            condition: data.forecastWeather.PSR.includes("LOW") ? "Sunny" : data.forecastWeather.PSR.includes("HIGH") ? "Rainy" : "Cloudy",
-            uvIndex: undefined,
-            windSpeed: undefined,
+        return data.temperature.data.map((station: any) => ({
+            place: station.place || 'Unknown',
+            temperature: station.value || 0,
+            unit: station.unit || 'C',
+            recordTime: station.recordTime || ''
         }));
-    } catch {
+    } catch (error) {
+        console.error('Error fetching temperatures:', error);
         return [];
     }
 }
