@@ -30,7 +30,7 @@ const getRandomProbability = (psr: string): number => {
         case 'Medium Low':
             return Math.random() * (40 - 20) + 20; // Random between 20 and 40
         case 'Low':
-            return Math.random() * (20 - 0) + 0; // Random between 0 and 20
+            return Math.random() * (10 - 0) + 0; // Random between 0 and 20
         default:
             return 0; // Fallback for unrecognized PSR values
     }
