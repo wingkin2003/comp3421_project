@@ -15,12 +15,15 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>Hong Kong Weather</title>
-        <meta name="description" content="Interactive Hong Kong weather app with current conditions, forecasts, and historical data" />
+        <meta
+          name="description"
+          content="Interactive Hong Kong weather app with current conditions, forecasts, and historical data"
+        />
       </head>
       <body>
         <Theme id="root" appearance="light">
           <Header />
-          {children}
+          <main className="main-content">{children}</main>
         </Theme>
       </body>
     </html>

@@ -29,14 +29,9 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "react": [
-        "./node_modules/@types/react"
       ]
+      // Remove "react" path to avoid conflicts
     },
-    "types": [
-      "react"
-    ],
     "target": "ESNext",
     "allowSyntheticDefaultImports": true,
     "preserveConstEnums": true,

@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Heading, Flex, Text, Switch } from "@radix-ui/themes";
+import { Heading, Flex } from "@radix-ui/themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Header({ onToggleUnit, isCelsius }: { onToggleUnit: () => void; isCelsius: boolean }) {
+export default function Header() {
     const pathname = usePathname();
 
     return (
         <header className="header">
-            <Flex justify="between" align="center" p="4">
+            <Flex justify="between" align="center">
                 <Heading size="6" className="header-title">
                     <Link href="/">Hong Kong Weather</Link>
                 </Heading>
@@ -30,16 +29,6 @@ export default function Header({ onToggleUnit, isCelsius }: { onToggleUnit: () =
                             </Link>
                         ))}
                     </nav>
-                    <Flex align="center" gap="3">
-                        <Text size="3" className="header-toggle-label">
-                            {isCelsius ? "Celsius" : "Fahrenheit"}
-                        </Text>
-                        <Switch
-                            checked={isCelsius}
-                            onCheckedChange={onToggleUnit}
-                            className="header-toggle"
-                        />
-                    </Flex>
                 </Flex>
             </Flex>
         </header>

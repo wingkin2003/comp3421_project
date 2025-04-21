@@ -26,7 +26,6 @@ const conditionIcons: Record<string, JSX.Element> = {
     Default: <Cloud className="w-12 h-12 text-gray-500" />,
 };
 
-// Map API conditions or warnings to simplified conditions
 const getCondition = (warnings: Warning[], generalSituation: string): string => {
     if (warnings.length > 0) {
         const warningName = warnings[0].name.toLowerCase();
@@ -50,7 +49,7 @@ export default function WeatherCard({
     isCelsius,
     toggleUnit,
 }: WeatherCardProps) {
-    const { temperature, place, unit, recordTime } = temperatureData;
+    const { temperature, place, recordTime } = temperatureData;
     const displayTemp = isCelsius ? temperature : (temperature * 9) / 5 + 32;
     const displayUnit = isCelsius ? "°C" : "°F";
     const condition = getCondition(warnings, localWeather.generalSituation);
@@ -71,7 +70,7 @@ export default function WeatherCard({
                     {displayTemp.toFixed(1)}{displayUnit}
                 </Text>
                 <Text size="4" className="text-gray-800">
-                    General: {localWeather.generalSituation.split('.')[0] || 'N/A'}
+                    General: {localWeather.generalSituation.split('.')[0] || "N/A"}
                 </Text>
                 {warnings.length > 0 && (
                     <Flex direction="column" gap="2">
@@ -86,7 +85,7 @@ export default function WeatherCard({
                     </Flex>
                 )}
                 <Text size="3" color="gray">
-                    Updated: {new Date(recordTime || localWeather.updateTime).toLocaleString("en-US")}
+                    Updated: {recordTime || localWeather.updateTime || "N/A"}
                 </Text>
                 <IconButton
                     variant="soft"
